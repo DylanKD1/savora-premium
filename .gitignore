@@ -1,0 +1,5 @@
+.env
+node_modules/
+savora.db
+savora.db-shm
+savora.db-wal
