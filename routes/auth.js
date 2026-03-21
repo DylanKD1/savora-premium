@@ -5,7 +5,10 @@ const jwt = require('jsonwebtoken');
 const { getDb } = require('../db');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'savora-secret-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is not configured');
+}
 const JWT_EXPIRES = '7d';
 
 // POST /api/auth/register
