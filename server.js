@@ -102,10 +102,14 @@ app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 app.use(cookieParser());
 
 // ─── Static Files ──────────────────────────────────────────────
-app.use(express.static(path.join(__dirname), {
-  index: 'savora-corrected.html',
+app.use(express.static(__dirname, {
+  index: 'index.html',
   extensions: ['html']
 }));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // ─── API Routes ────────────────────────────────────────────────
 app.use('/api/bookings', formLimiter, require('./routes/bookings'));
