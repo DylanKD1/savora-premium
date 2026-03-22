@@ -1,10 +1,11 @@
 const express = require('express');
-const { body, validationResult } = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const { getDb } = require('../db');
+const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// POST /api/loyalty/join
+// POST /api/loyalty/join — Join loyalty program (public)
 router.post('/join', [
   body('name').trim().notEmpty().withMessage('Name is required.').escape(),
   body('email').optional().isEmail().normalizeEmail()
@@ -41,10 +42,10 @@ router.post('/join', [
   }
 });
 
-// POST /api/loyalty/points
-router.post('/points', [
+// POST /api/loyalty/points — Add points to a member (ADMIN ONLY)
+router.post('/points', requireAdmin, [
   body('member_id').isInt().withMessage('Member ID required.'),
-  body('points').isInt({ min: 1 }).withMessage('Points must be positive.'),
+  body('points').isInt({ min: 1, max: 10000 }).withMessage('Points must be 1-10000.'),
   body('reason').trim().notEmpty().withMessage('Reason required.').escape()
 ], (req, res) => {
   const errors = validationResult(req);
@@ -54,6 +55,9 @@ router.post('/points', [
 
   try {
     const db = getDb();
+    const existing = db.prepare('SELECT id FROM loyalty_members WHERE id = ?').get(member_id);
+    if (!existing) return res.status(404).json({ success: false, error: 'Member not found.' });
+
     db.prepare('UPDATE loyalty_members SET points = points + ? WHERE id = ?').run(points, member_id);
     db.prepare('INSERT INTO loyalty_transactions (member_id, points, reason) VALUES (?, ?, ?)').run(member_id, points, reason);
     const member = db.prepare('SELECT * FROM loyalty_members WHERE id = ?').get(member_id);
@@ -63,8 +67,13 @@ router.post('/points', [
   }
 });
 
-// GET /api/loyalty/:id
-router.get('/:id', (req, res) => {
+// GET /api/loyalty/:id — Get member info (ADMIN ONLY)
+router.get('/:id', requireAdmin, [
+  param('id').isInt().withMessage('Invalid member ID.')
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
+
   try {
     const db = getDb();
     const member = db.prepare('SELECT * FROM loyalty_members WHERE id = ?').get(req.params.id);

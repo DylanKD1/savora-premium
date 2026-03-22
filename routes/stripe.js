@@ -100,7 +100,7 @@ router.post('/create-payment-intent', [
     });
   } catch (err) {
     console.error('Stripe error:', err.message);
-    res.status(500).json({ success: false, error: err.message || 'Payment failed. Please try again.' });
+    res.status(500).json({ success: false, error: 'Payment failed. Please try again.' });
   }
 });
 

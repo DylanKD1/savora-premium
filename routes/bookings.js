@@ -1,12 +1,13 @@
 const express = require('express');
-const { body, validationResult } = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
 const { sendBookingConfirmation, sendBookingNotification } = require('../email');
+const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// POST /api/bookings — Create a booking
+// POST /api/bookings — Create a booking (public)
 router.post('/', [
   body('name').trim().notEmpty().withMessage('Name is required.').escape(),
   body('email').isEmail().withMessage('Valid email is required.').normalizeEmail(),
@@ -43,8 +44,8 @@ router.post('/', [
   }
 });
 
-// GET /api/bookings — List all bookings
-router.get('/', (req, res) => {
+// GET /api/bookings — List all bookings (ADMIN ONLY)
+router.get('/', requireAdmin, (req, res) => {
   try {
     const db = getDb();
     const bookings = db.prepare('SELECT * FROM bookings ORDER BY created_at DESC').all();
@@ -54,8 +55,8 @@ router.get('/', (req, res) => {
   }
 });
 
-// GET /api/bookings/:ref
-router.get('/:ref', (req, res) => {
+// GET /api/bookings/:ref — Get single booking (ADMIN ONLY)
+router.get('/:ref', requireAdmin, (req, res) => {
   try {
     const db = getDb();
     const booking = db.prepare('SELECT * FROM bookings WHERE ref = ?').get(req.params.ref);
@@ -66,12 +67,20 @@ router.get('/:ref', (req, res) => {
   }
 });
 
-// PATCH /api/bookings/:ref
-router.patch('/:ref', (req, res) => {
+// PATCH /api/bookings/:ref — Update booking status (ADMIN ONLY + validated)
+router.patch('/:ref', requireAdmin, [
+  param('ref').trim().notEmpty().escape(),
+  body('status').isIn(['confirmed', 'cancelled', 'completed', 'no-show'])
+    .withMessage('Invalid status. Must be one of: confirmed, cancelled, completed, no-show.')
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
+
   try {
     const db = getDb();
     const { status } = req.body;
-    db.prepare('UPDATE bookings SET status = ? WHERE ref = ?').run(status || 'confirmed', req.params.ref);
+    const result = db.prepare('UPDATE bookings SET status = ? WHERE ref = ?').run(status, req.params.ref);
+    if (result.changes === 0) return res.status(404).json({ success: false, error: 'Booking not found.' });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Could not update booking.' });

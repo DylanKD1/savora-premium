@@ -1,11 +1,12 @@
 const express = require('express');
-const { body, validationResult } = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const { getDb } = require('../db');
 const { sendContactNotification, sendContactConfirmation } = require('../email');
+const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// POST /api/contact — Submit contact message + send emails
+// POST /api/contact — Submit contact message + send emails (public)
 router.post('/', [
   body('name').trim().notEmpty().withMessage('Name is required.').escape(),
   body('email').isEmail().withMessage('Valid email is required.').normalizeEmail(),
@@ -43,8 +44,8 @@ router.post('/', [
   }
 });
 
-// GET /api/contact — List all messages
-router.get('/', (req, res) => {
+// GET /api/contact — List all messages (ADMIN ONLY)
+router.get('/', requireAdmin, (req, res) => {
   try {
     const db = getDb();
     const messages = db.prepare('SELECT * FROM contact_messages ORDER BY created_at DESC').all();
@@ -54,12 +55,20 @@ router.get('/', (req, res) => {
   }
 });
 
-// PATCH /api/contact/:id — Update message status
-router.patch('/:id', (req, res) => {
+// PATCH /api/contact/:id — Update message status (ADMIN ONLY + validated)
+router.patch('/:id', requireAdmin, [
+  param('id').isInt().withMessage('Invalid message ID.'),
+  body('status').isIn(['unread', 'read', 'replied', 'archived'])
+    .withMessage('Invalid status. Must be one of: unread, read, replied, archived.')
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
+
   try {
     const db = getDb();
     const { status } = req.body;
-    db.prepare('UPDATE contact_messages SET status = ? WHERE id = ?').run(status || 'read', req.params.id);
+    const result = db.prepare('UPDATE contact_messages SET status = ? WHERE id = ?').run(status, req.params.id);
+    if (result.changes === 0) return res.status(404).json({ success: false, error: 'Message not found.' });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Could not update message.' });

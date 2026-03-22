@@ -1,10 +1,11 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { getDb } = require('../db');
+const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// POST /api/newsletter
+// POST /api/newsletter — Subscribe (public)
 router.post('/', [
   body('email').isEmail().withMessage('Valid email is required.').normalizeEmail()
 ], (req, res) => {
@@ -26,8 +27,8 @@ router.post('/', [
   }
 });
 
-// GET /api/newsletter
-router.get('/', (req, res) => {
+// GET /api/newsletter — List all subscribers (ADMIN ONLY)
+router.get('/', requireAdmin, (req, res) => {
   try {
     const db = getDb();
     const subscribers = db.prepare('SELECT * FROM newsletter_subscribers ORDER BY subscribed_at DESC').all();
