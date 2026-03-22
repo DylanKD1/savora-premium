@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Cancelled | Savora</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231a1712'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='60' fill='%23b8963e' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --ink: #1a1712;
+      --cream: #faf7f2;
+      --gold: #b8963e;
+      --gold-lt: #d4af5a;
+      --gold-dim: rgba(184, 150, 62, 0.12);
+      --gold-mid: rgba(184, 150, 62, 0.25);
+      --surface: #ffffff;
+      --surface2: #f8f4ee;
+      --border: rgba(26, 23, 18, 0.1);
+      --border-gold: rgba(184, 150, 62, 0.3);
+      --text-soft: #5a5449;
+      --text-mute: #9a9088;
+      --warning-bg: rgba(200, 134, 10, 0.06);
+      --warning-border: rgba(200, 134, 10, 0.18);
+      --warning-color: #8a5e00;
+      --serif: 'Playfair Display', Georgia, serif;
+      --sans: 'Outfit', system-ui, sans-serif;
+      --radius: 12px;
+      --radius-lg: 20px;
+      --dur: 0.3s;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .cancel-card {
+      background: var(--surface);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-lg);
+      max-width: 480px;
+      width: 100%;
+      padding: 52px 40px 40px;
+      text-align: center;
+      box-shadow:
+        0 1px 3px rgba(26, 23, 18, 0.04),
+        0 12px 40px rgba(26, 23, 18, 0.08);
+      animation: cardIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .cancel-icon {
+      width: 68px;
+      height: 68px;
+      margin: 0 auto 28px;
+      background: var(--warning-bg);
+      border: 2px solid var(--warning-border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--warning-color);
+      font-size: 1.6rem;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: 1.75rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      color: var(--text-soft);
+      font-size: 0.92rem;
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    .cart-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      margin-bottom: 32px;
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    .cart-note i {
+      color: var(--gold);
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: var(--radius);
+      font-family: var(--sans);
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all var(--dur);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(184, 150, 62, 0.25);
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(184, 150, 62, 0.35);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--border);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--gold-mid);
+      background: var(--gold-dim);
+      color: var(--gold);
+    }
+
+    .page-footer {
+      margin-top: 48px;
+      text-align: center;
+      color: var(--text-mute);
+      font-size: 0.72rem;
+      letter-spacing: 0.5px;
+    }
+
+    .page-footer .brand {
+      font-family: var(--serif);
+      font-size: 1rem;
+      color: var(--ink);
+      letter-spacing: 5px;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 16px; }
+      .cancel-card { padding: 36px 24px 28px; }
+      h1 { font-size: 1.45rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="cancel-card">
+    <div class="cancel-icon"><i class="fas fa-arrow-left"></i></div>
+    <h1>Payment cancelled</h1>
+    <p class="subtitle">No charge was made. You can return to the menu and place your order whenever you're ready.</p>
+
+    <div class="cart-note">
+      <i class="fas fa-shopping-basket"></i>
+      <span>Your basket is still saved — nothing was lost.</span>
+    </div>
+
+    <div class="btn-row">
+      <a href="/#menu-section" class="btn btn-gold"><i class="fas fa-utensils"></i> Return to Savora</a>
+      <a href="/" class="btn btn-outline"><i class="fas fa-home"></i> Back to Homepage</a>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="brand">SAVORA</div>
+    Fine Gastronomy · Kaiserslautern
+  </div>
+</body>
+</html>

@@ -4,6 +4,7 @@ require('dotenv').config();
 // Fail fast with clear messages if required env vars are missing.
 const REQUIRED_ENV = ['JWT_SECRET', 'STRIPE_SECRET_KEY'];
 const RECOMMENDED_ENV = ['STRIPE_PUBLISHABLE_KEY', 'ADMIN_USERS', 'GMAIL_USER', 'GMAIL_APP_PASSWORD', 'ALLOWED_ORIGIN'];
+// Note: GMAIL_USER and GMAIL_APP_PASSWORD must match what email.js reads
 
 const missingRequired = REQUIRED_ENV.filter(key => !process.env[key]);
 if (missingRequired.length > 0) {
@@ -102,13 +103,14 @@ app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 app.use(cookieParser());
 
 // ─── Static Files ──────────────────────────────────────────────
-app.use(express.static(__dirname, {
+// Serve only from public/ — prevents backend source files from being browser-accessible
+app.use(express.static(path.join(__dirname, 'public'), {
   index: 'index.html',
   extensions: ['html']
 }));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ─── API Routes ────────────────────────────────────────────────
@@ -119,6 +121,7 @@ app.use('/api/loyalty', formLimiter, require('./routes/loyalty'));
 app.use('/api/newsletter', formLimiter, require('./routes/newsletter'));
 app.use('/api/auth', authLimiter, require('./routes/auth'));
 app.use('/api/stripe', formLimiter, require('./routes/stripe'));
+app.use('/api/invoice', require('./routes/invoice'));
 
 // ─── Public Config (Stripe PK) ────────────────────────────────
 app.get('/api/config', (req, res) => {
@@ -158,9 +161,10 @@ const server = app.listen(PORT, () => {
   console.log(`    POST /api/auth/register — Register member`);
   console.log(`    POST /api/auth/login   — Login member`);
   console.log(`    GET  /api/auth/me      — Get profile`);
-  console.log(`    POST /api/stripe/create-payment-intent — Stripe payment`);
+  console.log(`    POST /api/stripe/create-checkout-session — Stripe checkout`);
   console.log(`    POST /api/stripe/confirm-order — Confirm paid order`);
   console.log(`    GET  /api/stripe/saved-cards — Saved cards`);
+  console.log(`    GET  /api/invoice/:ref      — Download invoice PDF`);
   console.log(`    GET  /api/health        — Health check\n`);
 });
 

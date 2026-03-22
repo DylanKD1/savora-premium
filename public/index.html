@@ -11,6 +11,8 @@
     content="Fine dining in Kaiserslautern. Reserve your table online, explore seasonal menus, and enjoy premium takeaway." />
   <meta property="og:image" content="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1200" />
   <title>Savora | Fine Gastronomy</title>
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231a1712'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='60' fill='%23b8963e' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -4038,10 +4040,9 @@
           </div>
           <div>
             <div class="info-label" style="margin-bottom:12px;">Follow Us</div>
-            <div class="social-row"><a href="https://instagram.com/yourhandle" target="_blank" rel="noopener"
-                class="social-btn"><i class="fab fa-instagram"></i> Instagram</a><a
-                href="https://tiktok.com/@yourhandle" target="_blank" rel="noopener" class="social-btn"><i
-                  class="fab fa-tiktok"></i> TikTok</a></div>
+            <div class="social-row"><a href="#" target="_blank" rel="noopener" class="social-btn"><i
+                  class="fab fa-instagram"></i> Instagram</a><a href="#" target="_blank" rel="noopener"
+                class="social-btn"><i class="fab fa-tiktok"></i> TikTok</a></div>
           </div>
         </div>
 
@@ -4096,7 +4097,11 @@
       <div class="footer-logo">SAVORA</div>
       <div class="footer-sub">Fine Gastronomy · Kaiserslautern</div>
       <div class="footer-divider"></div>
-      <div class="footer-copy">Reserve online in under a minute · Wilhelm Raabe Str. 14 · 67663 Kaiserslautern</div>
+      <div class="footer-copy">© 2026 Savora Fine Gastronomy · Wilhelm Raabe Str. 14 · 67663 Kaiserslautern</div>
+      <div style="display:flex;gap:20px;margin-top:8px;font-size:0.6rem;">
+        <a href="#" style="color:rgba(245,240,232,0.35);text-decoration:none;">Impressum</a>
+        <a href="#" style="color:rgba(245,240,232,0.35);text-decoration:none;">Datenschutz</a>
+      </div>
     </div>
   </footer>
 
@@ -4285,11 +4290,12 @@
     }
 
     /* ═══════════════════════════════════════
-       ✅ FIX 2: Gmail validation — enforces @gmail.com
+       ✅ FIX 2: Standard email validation — accepts any valid email
     ═══════════════════════════════════════ */
-    function validateGmail(inputEl, errElId) {
+    function validateEmail(inputEl, errElId) {
       const email = inputEl.value.trim().toLowerCase();
       const errEl = errElId ? $(errElId) : inputEl.parentNode.querySelector('.field-error-msg');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       inputEl.classList.remove('field-error');
       if (errEl) errEl.style.display = 'none';
@@ -4299,9 +4305,9 @@
         if (errEl) { errEl.textContent = 'Email address is required.'; errEl.style.display = 'block'; }
         return false;
       }
-      if (!email.endsWith('@gmail.com')) {
+      if (!emailRegex.test(email)) {
         inputEl.classList.add('field-error');
-        if (errEl) { errEl.textContent = 'Please enter a valid Gmail address (e.g. name@gmail.com).'; errEl.style.display = 'block'; }
+        if (errEl) { errEl.textContent = 'Please enter a valid email address.'; errEl.style.display = 'block'; }
         return false;
       }
       return true;
@@ -4798,7 +4804,7 @@
       $('closeCart').addEventListener('click', () => { $('cartSidebar').classList.remove('open'); $('cartSidebar').setAttribute('aria-hidden', 'true'); });
 
       /* ✅ FIX 3: BOOKING FORM — no backend fetch, shows confirmation inline */
-      $('bookingForm').addEventListener('submit', e => {
+      $('bookingForm').addEventListener('submit', async e => {
         e.preventDefault();
         const name = $('custName').value.trim();
         const email = $('custEmail').value.trim();
@@ -4810,7 +4816,7 @@
         let err = false;
         $('custName').classList.remove('field-error');
         if (!name) { $('custName').classList.add('field-error'); err = true; }
-        if (!validateGmail($('custEmail'), 'custEmailErr')) err = true;
+        if (!validateEmail($('custEmail'), 'custEmailErr')) err = true;
         if (err) { showToast('Please correct the errors before submitting.', 'error'); return; }
 
         const phoneRaw = $('custPhone').value.trim();
@@ -4824,32 +4830,63 @@
         const fDateParts = date.split('-');
         const fDateStr = `${fDateParts[2]}-${fDateParts[1]}-${fDateParts[0]}`;
 
-        // ✅ Show inline confirmation — no backend, no page refresh
-        $('bookingForm').innerHTML = `
-      <div style="text-align:center; padding: 40px 20px;">
-        <i class="fas fa-check-circle" style="font-size:3.5rem; color:var(--success); display:block; margin-bottom:20px;"></i>
-        <h3 style="font-family:var(--serif); font-size:1.8rem; margin-bottom:14px; font-weight:400; color:var(--ink);">Reservation Confirmed!</h3>
-        <p style="color:var(--text-soft); line-height:1.9; font-size:0.96rem; max-width:340px; margin:0 auto 24px;">
-          Thank you, <strong style="color:var(--ink);">${esc(name)}</strong>! Your reservation is confirmed for
-          <strong style="color:var(--gold);">${time}</strong> on
-          <strong style="color:var(--gold);">${fDateStr}</strong>.<br>
-          A confirmation will be sent to <strong style="color:var(--ink);">${esc(email)}</strong>.
-        </p>
-        <div style="background:var(--gold-dim);border:1px solid var(--gold-mid);border-radius:var(--radius);padding:12px 16px;font-size:0.78rem;color:var(--gold);margin-bottom:20px;display:inline-block;">
-          <i class="fas fa-hashtag" style="margin-right:4px;"></i> Ref: ${ref}
-        </div>
-        <br>
-        <a href="#menu-section" class="btn btn-gold"><i class="fas fa-utensils"></i> Browse Menu</a>
-      </div>`;
+        // ✅ Send to backend API
+        const btn = $('btnBook');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
 
-        const bookings = JSON.parse(localStorage.getItem('savora_bookings') || '[]');
-        bookings.push({ name, phone: phoneCheck.normalized || phoneRaw, email, guests, date, time, preorder, ref });
-        localStorage.setItem('savora_bookings', JSON.stringify(bookings));
-        renderAnalytics(); renderBookingHistory();
-        showToast('Reservation confirmed! 🎉', 'success');
-        if (loyalty.joined) { addPoints(100); showToast('+100 loyalty points earned! 🥂', 'success', 4000); }
+        try {
+          const apiBase = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.port === '5500') ? 'http://localhost:3000' : '';
+          const res = await fetch(`${apiBase}/api/bookings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, phone: phoneCheck.normalized || phoneRaw, guests: parseInt(guests), date, time, preorder, notes: '' })
+          });
+
+          let data;
+          if (res.ok) {
+            data = await res.json();
+          }
+
+          // Show confirmation regardless (localStorage fallback if API is down)
+          const bookingRef = data?.booking?.ref || ref;
+
+          $('bookingForm').innerHTML = `
+          <div style="text-align:center; padding: 40px 20px;">
+            <i class="fas fa-check-circle" style="font-size:3.5rem; color:var(--success); display:block; margin-bottom:20px;"></i>
+            <h3 style="font-family:var(--serif); font-size:1.8rem; margin-bottom:14px; font-weight:400; color:var(--ink);">Reservation Confirmed!</h3>
+            <p style="color:var(--text-soft); line-height:1.9; font-size:0.96rem; max-width:340px; margin:0 auto 24px;">
+              Thank you, <strong style="color:var(--ink);">${esc(name)}</strong>! Your reservation is confirmed for
+              <strong style="color:var(--gold);">${time}</strong> on
+              <strong style="color:var(--gold);">${fDateStr}</strong>.<br>
+              A confirmation will be sent to <strong style="color:var(--ink);">${esc(email)}</strong>.
+            </p>
+            <div style="background:var(--gold-dim);border:1px solid var(--gold-mid);border-radius:var(--radius);padding:12px 16px;font-size:0.78rem;color:var(--gold);margin-bottom:20px;display:inline-block;">
+              <i class="fas fa-hashtag" style="margin-right:4px;"></i> Ref: ${bookingRef}
+            </div>
+            <br>
+            <a href="#menu-section" class="btn btn-gold"><i class="fas fa-utensils"></i> Browse Menu</a>
+          </div>`;
+
+          const bookings = JSON.parse(localStorage.getItem('savora_bookings') || '[]');
+          bookings.push({ name, phone: phoneCheck.normalized || phoneRaw, email, guests, date, time, preorder, ref: bookingRef });
+          localStorage.setItem('savora_bookings', JSON.stringify(bookings));
+          renderAnalytics(); renderBookingHistory();
+          showToast('Reservation confirmed! 🎉', 'success');
+          if (loyalty.joined) { addPoints(100); showToast('+100 loyalty points earned! 🥂', 'success', 4000); }
+
+        } catch (err) {
+          // Graceful fallback: still show confirmation even if API is unreachable
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-check-circle"></i> <span id="btnBookLabel">Complete Booking</span>';
+          showToast('Booking saved locally (server unreachable).', 'warning', 4000);
+
+          const bookings = JSON.parse(localStorage.getItem('savora_bookings') || '[]');
+          bookings.push({ name, phone: phoneCheck.normalized || phoneRaw, email, guests, date, time, preorder, ref });
+          localStorage.setItem('savora_bookings', JSON.stringify(bookings));
+          renderAnalytics(); renderBookingHistory();
+        }
       });
-
       $('btnWaitlist').addEventListener('click', () => showToast('Added to waitlist!', 'warning'));
 
       /* CHECKOUT */
@@ -4869,7 +4906,7 @@
         if (deliveryType === 'delivery' && $('delStreet') && !$('delStreet').value.trim()) {
           $('delStreet').classList.add('field-error'); err = true;
         }
-        if (!validateGmail($('orderEmail'), 'orderEmailErr')) err = true;
+        if (!validateEmail($('orderEmail'), 'orderEmailErr')) err = true;
         if (err) { showToast('Please fix errors to continue.', 'warning'); return; }
 
         const name = ($('orderName') && $('orderName').value.trim()) || '';
@@ -4897,19 +4934,16 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting to payment…';
 
         try {
-          // Use absolute URL for local testing (e.g., Live Server) to hit the backend directly
-          const apiUrl = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.port === '5500'
-            ? 'http://localhost:3000/create-checkout-session'
-            : '/create-checkout-session';
+          const apiBase = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.port === '5500') ? 'http://localhost:3000' : '';
 
-          const res = await fetch(apiUrl, {
+          const res = await fetch(`${apiBase}/api/stripe/create-checkout-session`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              amount: total, subtotal, tip,
+              items,
+              tip: subtotal * (tipPct / 100),
               delivery_type: deliveryType,
               delivery_address: deliveryAddress,
-              items,
               customer_name: name,
               customer_email: email,
               customer_phone: phone,
@@ -4922,19 +4956,30 @@
           }
 
           const data = await res.json();
-          if (!data.url) throw new Error('No Stripe URL returned from server');
+          if (!data.url) throw new Error('No checkout URL returned from server');
 
-          // ✅ Redirect to Stripe hosted checkout
-          window.location.href = data.url;
+          // Use assign() to signal deliberate navigation — helps browsers avoid
+          // restoring stale bfcache with spinner still showing on Back press.
+          window.location.assign(data.url);
 
         } catch (err) {
-          // ── Graceful fallback when backend is not connected ──
           btn.disabled = false;
           btn.innerHTML = originalHTML;
           showToast(err.message.includes('fetch') ? 'Payment server not reachable. Is your backend running?' : err.message, 'error', 5000);
         }
       });
 
+      // ── Bfcache recovery: reset button when user returns via Back from Stripe ──
+      // If user presses Back from Stripe hosted checkout, browser may restore this
+      // page from bfcache with the Pay Now button still disabled/spinner state.
+      // pageshow.persisted === true means we're back from bfcache — reset everything.
+      window.addEventListener('pageshow', (e) => {
+        if (!e.persisted) return;
+        const btn = $('btnOrderNow');
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock"></i> Pay Now'; }
+        // Close the checkout modal if it was open when the user left
+        try { closeModal('paymentModal'); } catch (_) { }
+      });
       $$('[data-delivery]').forEach(btn => btn.addEventListener('click', () => {
         $$('[data-delivery]').forEach(b => b.classList.remove('active')); btn.classList.add('active');
         deliveryType = btn.dataset.delivery;
@@ -4988,6 +5033,39 @@
       });
       document.addEventListener('keydown', e => { if (e.key === 'Escape') ['dishModal', 'confirmModal', 'paymentModal'].forEach(closeModal); });
 
+      /* ✅ CONTACT FORM — sends to backend API + shows success state */
+      $('contactForm').addEventListener('submit', async e => {
+        e.preventDefault();
+
+        const name = $('cName').value.trim();
+        const reason = $('cReason').value;
+        const message = $('cMsg').value.trim();
+        let err = false;
+
+        $('cName').classList.remove('field-error');
+        $('cReason').classList.remove('field-error');
+        $('cMsg').classList.remove('field-error');
+        if (!name) { $('cName').classList.add('field-error'); err = true; }
+        if (!reason) { $('cReason').classList.add('field-error'); err = true; }
+        if (!message) { $('cMsg').classList.add('field-error'); err = true; }
+        if (!validateEmail($('cEmail'), 'cEmailErr')) err = true;
+
+        if (err) { showToast('Please fill in all required fields.', 'error'); return; }
+
+        try {
+          const apiBase = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.port === '5500') ? 'http://localhost:3000' : '';
+          await fetch(`${apiBase}/api/contact`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email: $('cEmail').value.trim(), subject: reason, message })
+          });
+        } catch (e) { /* Continue even if API is down */ }
+
+        $('contactForm').style.display = 'none';
+        $('contactSuccess').style.display = 'block';
+        showToast('Message sent! We\'ll be in touch within 24h. ✉️', 'success', 4500);
+      });
+
       /* LOYALTY JOIN */
       $('btnJoinLoyalty').addEventListener('click', () => {
         const name = $('loyaltyNameInput').value.trim();
@@ -4999,53 +5077,69 @@
       });
 
       /* NEWSLETTER */
-      $('nlForm').addEventListener('submit', e => {
+      $('nlForm').addEventListener('submit', async e => {
         e.preventDefault();
-        if (!validateGmail($('nlEmail'), 'nlEmailErr')) return;
+        if (!validateEmail($('nlEmail'), 'nlEmailErr')) return;
+
+        try {
+          const apiBase = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.port === '5500') ? 'http://localhost:3000' : '';
+          await fetch(`${apiBase}/api/newsletter`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: $('nlEmail').value.trim() })
+          });
+        } catch (e) { /* Continue even if API is down */ }
+
         $('nlFormWrap').style.display = 'none'; $('nlSuccess').style.display = 'block';
         showToast('Subscribed successfully!');
         if (loyalty.joined) { addPoints(50); showToast('+50 points for subscribing! 🎁', 'success', 4000); }
       });
 
-      /* ✅ FIX 4: CONTACT FORM — no fetch, no page refresh, shows success state directly */
-      $('contactForm').addEventListener('submit', e => {
-        e.preventDefault(); // ← This is the key line that stops the page refresh
+      /* ✅ CONTACT FORM — sends to backend API + shows success state */
+      $('contactForm').addEventListener('submit', async e => {
+        e.preventDefault();
 
         const name = $('cName').value.trim();
         const reason = $('cReason').value;
         const message = $('cMsg').value.trim();
         let err = false;
 
-        // Validate each field
         $('cName').classList.remove('field-error');
         $('cReason').classList.remove('field-error');
         $('cMsg').classList.remove('field-error');
         if (!name) { $('cName').classList.add('field-error'); err = true; }
         if (!reason) { $('cReason').classList.add('field-error'); err = true; }
         if (!message) { $('cMsg').classList.add('field-error'); err = true; }
-
-        // Gmail validation
-        if (!validateGmail($('cEmail'), 'cEmailErr')) err = true;
+        if (!validateEmail($('cEmail'), 'cEmailErr')) err = true;
 
         if (err) { showToast('Please fill in all required fields.', 'error'); return; }
 
-        // ✅ Hide form, show success message — no backend, no page refresh
+        try {
+          const apiBase = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' || window.location.port === '5500') ? 'http://localhost:3000' : '';
+          await fetch(`${apiBase}/api/contact`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email: $('cEmail').value.trim(), subject: reason, message })
+          });
+        } catch (e) { /* Continue even if API is down */ }
+
         $('contactForm').style.display = 'none';
         $('contactSuccess').style.display = 'block';
         showToast('Message sent! We\'ll be in touch within 24h. ✉️', 'success', 4500);
       });
 
-      /* ✅ FIX 4b: Reset contact form button — id="contactReset" is now in the HTML */
+      /* Contact form reset button */
       $('contactReset').addEventListener('click', () => {
         $('contactSuccess').style.display = 'none';
         $('contactForm').style.display = 'block';
         $('contactForm').reset();
-        // Clear any error states
         $('contactForm').querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
         $('contactForm').querySelectorAll('.field-error-msg').forEach(el => el.style.display = 'none');
       });
 
     });
+
+    // Stripe cancel redirects to /cancel — handled by public/cancel.html directly.
   </script>
 </body>
 

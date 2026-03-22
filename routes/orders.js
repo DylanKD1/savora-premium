@@ -4,19 +4,9 @@ const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db');
 const { sendOrderConfirmation, sendOrderNotification } = require('../email');
 const { requireAdmin } = require('../middleware/auth');
+const { resolveItems } = require('../config/menu');
 
 const router = express.Router();
-
-// ─── Server-side menu prices (single source of truth) ──────────
-const MENU_PRICES = {
-  'm-wiener': 22.9, 'm-jaeger': 23.9, 'm-sauerbraten': 26.9,
-  'm-rouladen': 27.5, 'm-haxe': 24.9, 'm-zwiebelrostbraten': 29.9,
-  'm-bratwurst': 14.9, 'm-currywurst': 13.5, 'm-flammkuchen': 16.9,
-  'm-maultaschen': 18.9, 'm-sauerkraut': 5.5, 'm-kartoffelsalat': 6.5,
-  'm-spaetzle': 8.5, 'm-bratkartoffeln': 6.5, 'm-rotkohl': 5.5,
-  'd-strudel': 8.9, 'd-schwarzwald': 9.5, 'd-rotegruetze': 7.9,
-  'd-pilsner': 4.9, 'd-helles': 5.2, 'd-weizen': 5.5, 'd-radler': 4.5
-};
 
 // POST /api/orders — Create an order (non-Stripe fallback)
 router.post('/', [
@@ -37,21 +27,13 @@ router.post('/', [
 
   // ── SERVER-SIDE PRICE RECALCULATION ──────────────────────────
   // Never trust client-sent totals. Recalculate from trusted menu prices.
-  const resolvedItems = [];
-  for (const item of items) {
-    const serverPrice = MENU_PRICES[item.id];
-    if (!serverPrice) {
-      return res.status(400).json({ success: false, error: `Unknown menu item: ${item.id}` });
-    }
-    resolvedItems.push({
-      id: item.id,
-      name: item.name || item.id,
-      qty: item.qty,
-      price: serverPrice
-    });
+  let resolvedItems, subtotal;
+  try {
+    ({ resolvedItems, subtotal } = resolveItems(items));
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
   }
 
-  const subtotal = resolvedItems.reduce((sum, i) => sum + (i.price * i.qty), 0);
   const safeTip = Math.max(0, Math.min(parseFloat(tip) || 0, subtotal)); // Cap tip at subtotal
   const total = subtotal + safeTip;
 

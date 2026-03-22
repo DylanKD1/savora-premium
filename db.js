@@ -45,6 +45,7 @@ function initTables() {
       delivery_type TEXT DEFAULT 'pickup',
       delivery_address TEXT DEFAULT '',
       payment_method TEXT DEFAULT 'card',
+      stripe_session_id TEXT DEFAULT NULL,
       status TEXT DEFAULT 'pending',
       created_at TEXT DEFAULT (datetime('now'))
     );
@@ -93,6 +94,21 @@ function initTables() {
       created_at TEXT DEFAULT (datetime('now'))
     );
   `);
+
+  // Migration: add stripe_session_id column to existing orders tables if needed
+  try {
+    db.exec(`ALTER TABLE orders ADD COLUMN stripe_session_id TEXT DEFAULT NULL`);
+  } catch (e) {
+    // Column already exists — ignore
+  }
+
+  // Migration: add UNIQUE index on stripe_session_id so INSERT OR IGNORE works correctly.
+  // This is the lock that prevents duplicate order rows for the same Stripe session.
+  try {
+    db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_stripe_session_id ON orders (stripe_session_id) WHERE stripe_session_id IS NOT NULL`);
+  } catch (e) {
+    // Index already exists or not supported — ignore
+  }
 }
 
 function closeDb() {
